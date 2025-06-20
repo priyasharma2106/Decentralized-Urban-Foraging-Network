@@ -43,3 +43,5 @@ The platform has extensive potential for growth and additional features:
 
 
 contract address :0x53f92e06a70cc9828feea9f91aac5d61efb7c076
+![Screenshot 2025-06-20 152648](https://github.com/user-attachments/assets/bdaee630-0015-4223-a5f5-e8c5e8856170)
+![Screenshot 2025-06-20 152629](https://github.com/user-attachments/assets/7dd80590-f7a2-448b-b6b3-75bfc767934a)

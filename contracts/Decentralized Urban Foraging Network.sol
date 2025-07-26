@@ -37,7 +37,8 @@ contract UrbanForagingNetwork {
     event ForagingSessionCompleted(uint256 indexed locationId, address indexed forager, uint256 harvestedAmount);
     event TokensEarned(address indexed user, uint256 amount);
     event HarvestLimitUpdated(uint256 indexed locationId, uint256 newLimit);
-    
+    event ForagingSessionVerified(uint256 indexed locationId, uint256 sessionIndex);
+
     function registerForagingLocation(
         string memory _name,
         string memory _description,
@@ -81,10 +82,8 @@ contract UrbanForagingNetwork {
         require(location.currentHarvested + _harvestedAmount <= location.harvestLimit, "Exceeds harvest limit");
         require(msg.value >= location.accessFee, "Insufficient access fee");
         
-        // Update harvest count
         location.currentHarvested += _harvestedAmount;
         
-        // Create foraging session record
         locationSessions[_locationId].push(ForagingSession({
             locationId: _locationId,
             forager: msg.sender,
@@ -93,7 +92,6 @@ contract UrbanForagingNetwork {
             verified: false
         }));
         
-        // Calculate and distribute tokens
         uint256 tokensEarned = _harvestedAmount * TOKENS_PER_HARVEST;
         uint256 ownerReward = (tokensEarned * OWNER_REWARD_PERCENTAGE) / 100;
         uint256 foragerReward = tokensEarned - ownerReward;
@@ -101,7 +99,6 @@ contract UrbanForagingNetwork {
         foragingTokenBalance[location.owner] += ownerReward;
         foragingTokenBalance[msg.sender] += foragerReward;
         
-        // Transfer access fee to location owner
         payable(location.owner).transfer(msg.value);
         
         emit ForagingSessionCompleted(_locationId, msg.sender, _harvestedAmount);
@@ -125,6 +122,20 @@ contract UrbanForagingNetwork {
         require(msg.sender == location.owner, "Only owner can extend season");
         
         location.seasonEndTime += _additionalTime;
+    }
+
+    function verifyForagingSession(uint256 _locationId, uint256 _sessionIndex) external {
+        require(_locationId < nextLocationId, "Location does not exist");
+        ForagingLocation storage location = foragingLocations[_locationId];
+        require(msg.sender == location.owner, "Only owner can verify session");
+        require(_sessionIndex < locationSessions[_locationId].length, "Invalid session index");
+
+        ForagingSession storage session = locationSessions[_locationId][_sessionIndex];
+        require(!session.verified, "Session already verified");
+
+        session.verified = true;
+
+        emit ForagingSessionVerified(_locationId, _sessionIndex);
     }
     
     function getLocationDetails(uint256 _locationId) external view returns (
@@ -152,3 +163,4 @@ contract UrbanForagingNetwork {
         );
     }
 }
+"added one function suggested by Chatgpt"
